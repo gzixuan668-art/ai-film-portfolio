@@ -1,4 +1,4 @@
-import { motion, useScroll, useSpring } from 'framer-motion'
+import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
 import { useEffect, useState } from 'react'
 
 type Project = {
@@ -73,6 +73,8 @@ function Arrow({ diagonal = false }: { diagonal?: boolean }) {
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [time, setTime] = useState('')
+  const [loading, setLoading] = useState(true)
+  const [cursor, setCursor] = useState({ x: -100, y: -100 })
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 })
 
@@ -80,12 +82,29 @@ function App() {
     const tick = () => setTime(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Hong_Kong' }).format(new Date()))
     tick()
     const timer = window.setInterval(tick, 30_000)
-    return () => window.clearInterval(timer)
+    const intro = window.setTimeout(() => setLoading(false), 950)
+    const move = (event: MouseEvent) => setCursor({ x: event.clientX, y: event.clientY })
+    window.addEventListener('mousemove', move)
+    return () => {
+      window.clearInterval(timer)
+      window.clearTimeout(intro)
+      window.removeEventListener('mousemove', move)
+    }
   }, [])
 
   return (
     <div className="site-shell">
+      <AnimatePresence>
+        {loading && (
+          <motion.div className="preloader" initial={{ y: 0 }} exit={{ y: '-100%' }} transition={{ duration: .75, ease: [0.76, 0, 0.24, 1] }}>
+            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>Z.</motion.span>
+            <p>LOADING VISUALS <i>01—26</i></p>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <motion.div className="cursor" animate={{ x: cursor.x - 7, y: cursor.y - 7 }} transition={{ type: 'spring', stiffness: 800, damping: 45 }} />
       <motion.div className="progress" style={{ scaleX }} />
+      <div className="side-index"><span>AI / FILM</span><strong>2026</strong></div>
       <nav className="navbar">
         <a className="brand" href="#top" aria-label="返回首页">Z<span className="brand-dot">.</span></a>
         <div className="nav-meta"><span>AI FILM DIRECTOR</span><span>BASED IN GUANGZHOU</span></div>
@@ -116,6 +135,10 @@ function App() {
           <div className="scroll-cue">SCROLL TO EXPLORE <span>↓</span></div>
         </section>
 
+        <div className="marquee" aria-hidden="true">
+          <div><span>AI FILM DIRECTION</span><i>✦</i><span>VISUAL DEVELOPMENT</span><i>✦</i><span>CINEMATIC STORYTELLING</span><i>✦</i><span>AI FILM DIRECTION</span><i>✦</i><span>VISUAL DEVELOPMENT</span><i>✦</i><span>CINEMATIC STORYTELLING</span><i>✦</i></div>
+        </div>
+
         <section className="works section" id="works">
           <div className="section-head">
             <p className="kicker">01 / SELECTED WORK</p>
@@ -128,6 +151,7 @@ function App() {
                 <a href="#contact" className="project-media" aria-label={`查看项目 ${project.title}`}>
                   <img src={project.image} alt={project.cnTitle} loading="lazy" />
                   <span className="project-index">({project.id})</span>
+                  <span className="project-hover-title">{project.title}</span>
                   <span className="play"><span>PLAY</span><i>▶</i></span>
                 </a>
                 <div className="project-caption">
