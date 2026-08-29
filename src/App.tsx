@@ -117,22 +117,54 @@ function App() {
       </nav>
 
       <main>
-        <section className="hero" id="top">
-          <video className="hero-video" autoPlay muted loop playsInline poster="https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=2400&q=90">
-            <source src="https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4" type="video/mp4" />
-          </video>
-          <div className="hero-overlay" />
+        <section className="hero sweet-hero" id="top">
+          <div className="sweet-shape shape-one" />
+          <div className="sweet-shape shape-two" />
           <div className="hero-noise" />
-          <motion.div className="hero-copy" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1.2 }}>
-            <p className="eyebrow"><span className="status-dot" /> AVAILABLE FOR SELECTED PROJECTS · 2026</p>
-            <h1><span>AI FILM</span><span className="hero-line-two">&amp; VISUAL <em>STORYTELLING</em></span></h1>
-            <div className="hero-bottom">
-              <p>I DIRECT IMAGES THAT<br />FEEL BEFORE THEY EXPLAIN.</p>
-              <a className="circle-link" href="#works" aria-label="查看精选作品"><Arrow diagonal /></a>
-              <p className="time">HONG KONG / {time}</p>
-            </div>
+          <motion.div className="sweet-portrait" initial={{ clipPath: 'inset(0 100% 0 0)' }} animate={{ clipPath: 'inset(0 0% 0 0)' }} transition={{ duration: 1.15, delay: .7, ease: [0.76, 0, 0.24, 1] }}>
+            <img src="/assets/japanese-sweet-girl.png" alt="日系甜美短发女孩角色设计" />
+            <span>CHARACTER / 001</span>
           </motion.div>
-          <div className="scroll-cue">SCROLL TO EXPLORE <span>↓</span></div>
+
+          <motion.div className="sweet-copy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, delay: 1 }}>
+            <p className="sweet-kicker">AI CHARACTER &amp; VISUAL DEVELOPMENT</p>
+            <h1><span>SWEET</span><span>IN <em>MOTION!</em></span></h1>
+            <p className="sweet-date">— 29/08/2026</p>
+          </motion.div>
+
+          <div className="sweet-manifesto">
+            <span>WHAT IF EVERY FRAME</span>
+            <span>FELT LIKE A MEMORY?</span>
+            <i>私の小さな映画世界</i>
+          </div>
+
+          <div className="sweet-badge">
+            <span>MAKE IT</span>
+            <strong>FEEL<br />REAL</strong>
+            <i>✦</i>
+          </div>
+
+          <div className="sweet-thumbs">
+            {['12%', '42%', '72%'].map((position, index) => (
+              <div className="sweet-thumb" key={position}>
+                <img src="/assets/japanese-sweet-girl.png" alt="" style={{ objectPosition: position }} />
+                <span>0{index + 1}</span>
+              </div>
+            ))}
+            <p>01&nbsp;&nbsp;02&nbsp;&nbsp;03&nbsp;&nbsp;04&nbsp;&nbsp;05</p>
+          </div>
+
+          <div className="sweet-note-cards">
+            <div><span>WORKING WITH</span><strong>STORY &amp; LIGHT</strong><i>✦</i></div>
+            <div><span>AI FILM DIRECTOR</span><strong>GUO ZIXUAN</strong><i>↗</i></div>
+          </div>
+
+          <div className="sweet-footer">
+            <p>I DIRECT IMAGES THAT FEEL<br />BEFORE THEY EXPLAIN.</p>
+            <a className="sweet-enter" href="#works"><span>ENTER</span><Arrow diagonal /></a>
+            <p>GUANGZHOU / {time}</p>
+          </div>
+          <div className="scroll-cue dark">SCROLL TO EXPLORE <span>↓</span></div>
         </section>
 
         <div className="marquee" aria-hidden="true">
