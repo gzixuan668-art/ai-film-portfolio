@@ -122,54 +122,38 @@ function App() {
       </nav>
 
       <main>
-        <section className="hero sweet-hero" id="top">
-          <div className="sweet-shape shape-one" />
-          <div className="sweet-shape shape-two" />
+        <section className="hero video-hero" id="top">
+          <video
+            className="video-hero-bg"
+            src="/media/portrait-mv/summer.mp4"
+            poster="/posters/portrait-mv/summer.jpg"
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            aria-label="《夏天》作品背景视频"
+          />
+          <div className="video-hero-overlay" />
           <div className="hero-noise" />
-          <motion.div className="sweet-portrait" initial={{ clipPath: 'inset(0 100% 0 0)' }} animate={{ clipPath: 'inset(0 0% 0 0)' }} transition={{ duration: 1.15, delay: .7, ease: [0.76, 0, 0.24, 1] }}>
-            <img src="/assets/japanese-sweet-girl.png" alt="日系甜美短发女孩角色设计" />
-            <span>角色设计 / 001</span>
+
+          <motion.div className="video-hero-copy" initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .9, delay: .9 }}>
+            <p className="video-hero-kicker">郭梓轩 · AI 影像作品集 / 2026</p>
+            <h1><span>让故事</span><span>发生在<em>画面里。</em></span></h1>
           </motion.div>
 
-          <motion.div className="sweet-copy" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .8, delay: 1 }}>
-            <p className="sweet-kicker">AI 影像导演 / 视觉设计</p>
-            <h1><span>一帧</span><span>一场<em>梦。</em></span></h1>
-            <p className="sweet-date">— 29/08/2026</p>
-          </motion.div>
-
-          <div className="sweet-manifesto">
-            <span>如果每一帧</span>
-            <span>都像一段记忆？</span>
-            <i>私の小さな映画世界</i>
+          <div className="video-hero-aside">
+            <span>正在播放</span>
+            <strong>《夏天》</strong>
+            <i>00:44 / 原始 1080P</i>
           </div>
 
-          <div className="sweet-badge">
-            <span>把想象</span>
-            <strong>拍成<br />电影</strong>
-            <i>✦</i>
-          </div>
-
-          <div className="sweet-thumbs">
-            {['12%', '42%', '72%'].map((position, index) => (
-              <div className="sweet-thumb" key={position}>
-                <img src="/assets/japanese-sweet-girl.png" alt="" style={{ objectPosition: position }} />
-                <span>0{index + 1}</span>
-              </div>
-            ))}
-            <p>01&nbsp;&nbsp;02&nbsp;&nbsp;03&nbsp;&nbsp;04&nbsp;&nbsp;05</p>
-          </div>
-
-          <div className="sweet-note-cards">
-            <div><span>与什么一起工作</span><strong>故事与光</strong><i>✦</i></div>
-            <div><span>AI 影像导演</span><strong>郭梓轩</strong><i>↗</i></div>
-          </div>
-
-          <div className="sweet-footer">
-            <p>让画面先产生感受<br />再给出解释</p>
-            <a className="sweet-enter" href="#works"><span>进入作品</span><Arrow diagonal /></a>
+          <div className="video-hero-footer">
+            <p>AI 影像导演 / 视觉设计师<br />从创意到最终成片</p>
+            <a className="video-hero-enter" href="#works"><span>浏览全部作品</span><Arrow diagonal /></a>
             <p>广州 / {time}</p>
           </div>
-          <div className="scroll-cue dark">向下浏览 <span>↓</span></div>
+          <div className="scroll-cue">向下浏览 <span>↓</span></div>
         </section>
 
         <div className="marquee" aria-hidden="true">
