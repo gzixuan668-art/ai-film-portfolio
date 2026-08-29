@@ -1,4 +1,9 @@
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, rename, rm, writeFile } from 'node:fs/promises'
+
+await rm('dist/client', { recursive: true, force: true })
+await mkdir('dist/client', { recursive: true })
+await rename('dist/index.html', 'dist/client/index.html')
+await rename('dist/assets', 'dist/client/assets')
 
 const source = `export default {
   async fetch(request, env) {
