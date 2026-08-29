@@ -1,5 +1,5 @@
-import { AnimatePresence, motion, useScroll, useSpring } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { AnimatePresence, motion, useScroll, useSpring, useTransform } from 'framer-motion'
+import { useEffect, useRef, useState } from 'react'
 
 type Project = {
   id: string
@@ -55,9 +55,55 @@ const capabilities = [
 ]
 
 const workflow = ['创意概念', '视觉开发', '电影分镜', 'AI 生成', '剪辑后期']
+const smoothEase = [0.76, 0, 0.24, 1] as const
+const gridVariants = {
+  hidden: {},
+  visible: { transition: { staggerChildren: .12, delayChildren: .18 } },
+}
+const cardVariants = {
+  hidden: { opacity: 0, y: 90, clipPath: 'inset(0 0 18% 0)' },
+  visible: { opacity: 1, y: 0, clipPath: 'inset(0 0 0% 0)', transition: { duration: 1.05, ease: smoothEase } },
+}
 
 function Arrow({ diagonal = false }: { diagonal?: boolean }) {
   return <span aria-hidden="true" className={diagonal ? 'arrow diagonal' : 'arrow'}>→</span>
+}
+
+function SectionDisplay({ children }: { children: string }) {
+  return (
+    <div className="section-display-mask" aria-hidden="true">
+      <motion.p
+        className="section-display"
+        initial={{ y: '115%', scaleX: .58 }}
+        whileInView={{ y: '0%', scaleX: 1 }}
+        viewport={{ once: true, amount: .75 }}
+        transition={{ duration: 1.15, ease: smoothEase }}
+      >
+        {children}
+      </motion.p>
+    </div>
+  )
+}
+
+function ProjectCard({ project, index, onPlay }: { project: Project; index: number; onPlay: (project: Project) => void }) {
+  const cardRef = useRef<HTMLElement>(null)
+  const { scrollYProgress } = useScroll({ target: cardRef, offset: ['start end', 'end start'] })
+  const imageY = useTransform(scrollYProgress, [0, 1], ['-4%', '4%'])
+
+  return (
+    <motion.article ref={cardRef} variants={cardVariants} layout className={`project ${index === 0 ? 'feature' : index < 8 ? 'major' : 'compact-project'}`}>
+      <button className="project-media" aria-label={`播放项目 ${project.cnTitle}`} onClick={() => onPlay(project)}>
+        <motion.img src={project.image} alt={project.cnTitle} loading="lazy" style={{ y: imageY, scale: 1.08 }} />
+        <span className="project-index">({project.id})</span>
+        <span className="project-hover-title">{project.cnTitle}</span>
+        <span className="play"><span>播放原片</span><i>▶</i></span>
+      </button>
+      <div className="project-caption">
+        <div><h3>{project.cnTitle}</h3><p>{project.title}</p></div>
+        <div className="project-details"><span>{categoryLabels[project.category]}</span><span>{project.year}</span><span>{project.duration}</span></div>
+      </div>
+    </motion.article>
+  )
 }
 
 function App() {
@@ -75,7 +121,7 @@ function App() {
     const tick = () => setTime(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Hong_Kong' }).format(new Date()))
     tick()
     const timer = window.setInterval(tick, 30_000)
-    const intro = window.setTimeout(() => setLoading(false), 950)
+    const intro = window.setTimeout(() => setLoading(false), 2050)
     const move = (event: MouseEvent) => setCursor({ x: event.clientX, y: event.clientY })
     window.addEventListener('mousemove', move)
     return () => {
@@ -101,9 +147,14 @@ function App() {
     <div className="site-shell">
       <AnimatePresence>
         {loading && (
-          <motion.div className="preloader" initial={{ y: 0 }} exit={{ y: '-100%' }} transition={{ duration: .75, ease: [0.76, 0, 0.24, 1] }}>
-            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>Z.</motion.span>
-            <p>正在载入影像 <i>01—20</i></p>
+          <motion.div className="preloader" initial={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: .2, delay: 1.05 }}>
+            <motion.div className="opening-panel opening-sage" exit={{ x: '-101%' }} transition={{ duration: 1.15, ease: smoothEase }} />
+            <motion.div className="opening-panel opening-sky" exit={{ x: '101%' }} transition={{ duration: 1.15, ease: smoothEase }} />
+            <motion.div className="opening-content" exit={{ y: '-120%', opacity: 0 }} transition={{ duration: .7, ease: smoothEase }}>
+              <div className="opening-mask"><motion.span initial={{ y: '118%', scaleX: .42 }} animate={{ y: 0, scaleX: 1 }} transition={{ duration: 1.15, delay: .18, ease: smoothEase }}>Z.</motion.span></div>
+              <div className="opening-copy-mask"><motion.strong initial={{ y: '130%' }} animate={{ y: 0 }} transition={{ duration: .9, delay: .5, ease: smoothEase }}>AI 影像导演 · 郭梓轩</motion.strong></div>
+            </motion.div>
+            <p>正在打开一段夏日影像 <i>01—20</i></p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -137,9 +188,12 @@ function App() {
           <div className="video-hero-overlay" />
           <div className="hero-noise" />
 
-          <motion.div className="video-hero-copy" initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: .9, delay: .9 }}>
-            <p className="video-hero-kicker">郭梓轩 · AI 影像作品集 / 2026</p>
-            <h1><span>让故事</span><span>发生在<em>画面里。</em></span></h1>
+          <motion.div className="video-hero-copy">
+            <motion.p className="video-hero-kicker" initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .8, delay: 2.35, ease: smoothEase }}>郭梓轩 · AI 影像作品集 / 2026</motion.p>
+            <h1>
+              <span className="hero-title-mask"><motion.b initial={{ y: '112%', scaleX: .62 }} animate={{ y: 0, scaleX: 1 }} transition={{ duration: 1.15, delay: 2.05, ease: smoothEase }}>让故事</motion.b></span>
+              <span className="hero-title-mask"><motion.b initial={{ y: '112%', scaleX: .54 }} animate={{ y: 0, scaleX: 1 }} transition={{ duration: 1.2, delay: 2.18, ease: smoothEase }}>发生在<em>画面里。</em></motion.b></span>
+            </h1>
           </motion.div>
 
           <div className="video-hero-aside">
@@ -161,6 +215,7 @@ function App() {
         </div>
 
         <section className="works section" id="works">
+          <SectionDisplay>SELECTED WORKS</SectionDisplay>
           <div className="section-head">
             <p className="kicker">01 / 影像作品</p>
             <h2>先看长片，<br /><em>再看片刻。</em></h2>
@@ -173,35 +228,25 @@ function App() {
               </button>
             ))}
           </div>
-          <div className="project-grid">
+          <motion.div className="project-grid" variants={gridVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: .04 }}>
             <AnimatePresence mode="popLayout">
             {filteredProjects.map((project, index) => (
-              <motion.article layout className={`project ${index === 0 ? 'feature' : index < 8 ? 'major' : 'compact-project'}`} key={project.video} initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, scale: .96 }} transition={{ duration: .55, delay: Math.min(index, 5) * .04 }}>
-                <button className="project-media" aria-label={`播放项目 ${project.cnTitle}`} onClick={() => setPlayingProject(project)}>
-                  <img src={project.image} alt={project.cnTitle} loading="lazy" />
-                  <span className="project-index">({project.id})</span>
-                  <span className="project-hover-title">{project.cnTitle}</span>
-                  <span className="play"><span>播放原片</span><i>▶</i></span>
-                </button>
-                <div className="project-caption">
-                  <div><h3>{project.cnTitle}</h3><p>{project.title}</p></div>
-                  <div className="project-details"><span>{categoryLabels[project.category]}</span><span>{project.year}</span><span>{project.duration}</span></div>
-                </div>
-              </motion.article>
+              <ProjectCard project={project} index={index} onPlay={setPlayingProject} key={project.video} />
             ))}
             </AnimatePresence>
-          </div>
+          </motion.div>
           <p className="archive-count">当前展示 / {String(filteredProjects.length).padStart(2, '0')} 部作品</p>
         </section>
 
         <section className="about section" id="about">
+          <SectionDisplay>ABOUT THE DIRECTOR</SectionDisplay>
           <div className="about-title"><p className="kicker">02 / 关于我</p><h2>不只是生成。<br /><em>我在导演整个画面。</em></h2></div>
-          <div className="about-grid">
-            <div className="portrait-wrap">
+          <motion.div className="about-grid" initial="hidden" whileInView="visible" viewport={{ once: true, amount: .2 }} variants={gridVariants}>
+            <motion.div className="portrait-wrap" variants={cardVariants}>
               <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1300&q=85" alt="创作者肖像占位图" loading="lazy" />
               <span className="vertical-label">个人影像 / 占位图</span>
-            </div>
-            <div className="about-copy">
+            </motion.div>
+            <motion.div className="about-copy" variants={cardVariants}>
               <p className="lead">我是 AI 影像导演与视觉设计师，专注电影化叙事、情绪氛围与具有商业完成度的画面。</p>
               <p>从概念、角色与场景开发，到电影分镜、AI 生成、剪辑、调色与声音，我独立完成一条影像从想法到成片的完整工作流。</p>
               <p>我的视觉横跨东方叙事、日系情绪电影与高端品牌影像。AI 是制作方式，审美判断和导演思维才是作品的核心。</p>
@@ -210,28 +255,31 @@ function App() {
                 <div><strong>05</strong><span>核心创作能力</span></div>
                 <div><strong>01</strong><span>全流程独立创作者</span></div>
               </div>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </section>
 
         <section className="capabilities section">
+          <SectionDisplay>CAPABILITIES</SectionDisplay>
           <div className="section-head compact"><p className="kicker">03 / 专业能力</p><h2>从一个想法<br />到<em>最终一帧。</em></h2></div>
           <div className="cap-list">
-            {capabilities.map(([id, name, cn]) => (
-              <div className="cap-row" key={id}><span>{id}</span><h3>{name}</h3><p>{cn}</p><Arrow diagonal /></div>
+            {capabilities.map(([id, name, cn], index) => (
+              <motion.div className="cap-row" key={id} initial={{ opacity: 0, x: -80 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true, amount: .7 }} transition={{ duration: .85, delay: index * .08, ease: smoothEase }}><span>{id}</span><h3>{name}</h3><p>{cn}</p><Arrow diagonal /></motion.div>
             ))}
           </div>
         </section>
 
         <section className="workflow section">
+          <SectionDisplay>CREATIVE PROCESS</SectionDisplay>
           <div className="workflow-top"><p className="kicker">04 / 创作流程</p><p>一个方向。<br />贯穿每一步。</p></div>
           <div className="workflow-track">
-            {workflow.map((step, i) => <div className="workflow-step" key={step}><span>0{i + 1}</span><strong>{step}</strong>{i < workflow.length - 1 && <i>→</i>}</div>)}
+            {workflow.map((step, i) => <motion.div className="workflow-step" key={step} initial={{ opacity: 0, y: 70 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .65 }} transition={{ duration: .8, delay: i * .12, ease: smoothEase }}><span>0{i + 1}</span><strong>{step}</strong>{i < workflow.length - 1 && <i>→</i>}</motion.div>)}
           </div>
           <p className="workflow-note">创意导演 · AI 辅助制作 · 人的审美判断</p>
         </section>
 
         <section className="contact section" id="contact">
+          <SectionDisplay>LET'S CREATE</SectionDisplay>
           <p className="kicker">05 / 联系合作</p>
           <div className="contact-main">
             <h2>有一个故事<br />想让人<em>看见？</em></h2>
