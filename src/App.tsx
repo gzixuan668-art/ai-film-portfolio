@@ -433,7 +433,7 @@ function App() {
 }
 
 function Root() {
-  return window.location.pathname === '/upload' ? <UploadPage /> : <App />
+  return new URLSearchParams(window.location.search).get('upload') === '1' ? <UploadPage /> : <App />
 }
 
 export default Root
