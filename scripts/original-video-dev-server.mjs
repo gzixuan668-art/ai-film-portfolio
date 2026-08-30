@@ -1,8 +1,9 @@
-import { createReadStream, readFileSync, statSync } from 'node:fs'
+import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs'
 
-const videoLibrary = JSON.parse(
-  readFileSync(new URL('../work/video-library-local.json', import.meta.url), 'utf8'),
-)
+const libraryUrl = new URL('../work/video-library-local.json', import.meta.url)
+const videoLibrary = existsSync(libraryUrl)
+  ? JSON.parse(readFileSync(libraryUrl, 'utf8'))
+  : []
 
 export function originalVideoDevServer() {
   const byKey = new Map(videoLibrary.map((item) => [item.key, item.source]))
