@@ -55,6 +55,28 @@ const capabilities = [
 ]
 
 const workflow = ['创意概念', '视觉开发', '电影分镜', 'AI 生成', '剪辑后期']
+const uploadKeys = [
+  'short-drama/short-drama.mp4',
+  'short-video/car-check.mp4',
+  'short-video/argument-v2.mp4',
+  'short-video/rice-field.mp4',
+  'short-video/episode-02.mp4',
+  'short-video/episode-01.mp4',
+  'short-video/cold.mp4',
+  'short-video/study-hard.mp4',
+  'short-video/assessment.mp4',
+  'short-video/in-mothers-eyes.mp4',
+  'short-video/misunderstanding.mp4',
+  'short-video/ice-cream.mp4',
+  'short-video/english.mp4',
+  'music-video/emotion.mp4',
+  'music-video/swordsman.mp4',
+  'music-video/war.mp4',
+  'narrative/new-film.mp4',
+  'portrait-mv/portrait-01.mp4',
+  'portrait-mv/seaside.mp4',
+  'portrait-mv/summer.mp4',
+] as const
 const smoothEase = [0.76, 0, 0.24, 1] as const
 const gridVariants = {
   hidden: {},
@@ -103,6 +125,106 @@ function ProjectCard({ project, index, onPlay }: { project: Project; index: numb
         <div className="project-details"><span>{categoryLabels[project.category]}</span><span>{project.year}</span><span>{project.duration}</span></div>
       </div>
     </motion.article>
+  )
+}
+
+function UploadPage() {
+  const [files, setFiles] = useState<File[]>([])
+  const [token, setToken] = useState('')
+  const [status, setStatus] = useState('请选择全部 20 个原始视频。')
+  const [progress, setProgress] = useState(0)
+  const [uploading, setUploading] = useState(false)
+
+  async function checkedFetch(url: string, init?: RequestInit) {
+    const response = await fetch(url, init)
+    if (!response.ok) throw new Error(`${response.status} ${await response.text()}`)
+    return response
+  }
+
+  async function uploadFile(file: File, key: string, index: number) {
+    const publicUrl = `/media/${key}`
+    const existing = await fetch(publicUrl, { method: 'HEAD' })
+    if (existing.ok && Number(existing.headers.get('content-length')) === file.size) {
+      setStatus(`[${index + 1}/20] 已存在：${file.name}`)
+      return
+    }
+
+    const endpoint = `/api/media-upload/${key}`
+    const headers = { authorization: `Bearer ${token}` }
+    const created = await checkedFetch(`${endpoint}?action=create`, { method: 'POST', headers })
+    const { uploadId } = await created.json() as { uploadId: string }
+    const parts: unknown[] = []
+    const partSize = 32 * 1024 * 1024
+
+    try {
+      for (let offset = 0, partNumber = 1; offset < file.size; offset += partSize, partNumber += 1) {
+        const end = Math.min(offset + partSize, file.size)
+        const uploaded = await checkedFetch(`${endpoint}?action=part&uploadId=${encodeURIComponent(uploadId)}&partNumber=${partNumber}`, {
+          method: 'PUT',
+          headers,
+          body: file.slice(offset, end),
+        })
+        parts.push(await uploaded.json())
+        const fileProgress = end / file.size
+        setProgress(Math.round(((index + fileProgress) / files.length) * 100))
+        setStatus(`[${index + 1}/20] 正在上传 ${file.name} · ${Math.round(fileProgress * 100)}%`)
+      }
+
+      await checkedFetch(`${endpoint}?action=complete&uploadId=${encodeURIComponent(uploadId)}`, {
+        method: 'POST',
+        headers: { ...headers, 'content-type': 'application/json' },
+        body: JSON.stringify({ parts }),
+      })
+    } catch (error) {
+      await fetch(`${endpoint}?action=abort&uploadId=${encodeURIComponent(uploadId)}`, { method: 'DELETE', headers }).catch(() => undefined)
+      throw error
+    }
+  }
+
+  async function startUpload() {
+    if (files.length !== uploadKeys.length) {
+      setStatus(`文件数量不正确：当前 ${files.length} 个，需要 20 个。`)
+      return
+    }
+    if (!token.trim()) {
+      setStatus('请输入本次上传密钥。')
+      return
+    }
+
+    setUploading(true)
+    setProgress(0)
+    try {
+      for (let index = 0; index < files.length; index += 1) {
+        await uploadFile(files[index], uploadKeys[index], index)
+      }
+      setProgress(100)
+      setStatus('全部 20 个原始视频已上传完成。')
+    } catch (error) {
+      setStatus(`上传中断：${error instanceof Error ? error.message : '未知错误'}`)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <main style={{ minHeight: '100vh', background: '#eef2e8', color: '#1f2924', padding: '48px', fontFamily: 'system-ui, sans-serif' }}>
+      <section style={{ maxWidth: 920, margin: '0 auto', background: '#fffdf7', border: '1px solid #cfd8ca', borderRadius: 24, padding: 40 }}>
+        <p style={{ letterSpacing: '.15em', color: '#6e806f' }}>Z. PORTFOLIO / MEDIA UPLOADER</p>
+        <h1 style={{ fontSize: 46, margin: '12px 0 8px' }}>原始视频上传</h1>
+        <p>仅用于本站媒体维护。文件会按作品清单顺序上传，不进行压缩或转码。</p>
+        <label style={{ display: 'block', marginTop: 28 }}>
+          <span style={{ display: 'block', marginBottom: 8 }}>本次上传密钥</span>
+          <input aria-label="本次上传密钥" type="password" value={token} onChange={(event) => setToken(event.target.value)} disabled={uploading} style={{ width: '100%', boxSizing: 'border-box', padding: 14, border: '1px solid #acbba8', borderRadius: 10 }} />
+        </label>
+        <label style={{ display: 'block', marginTop: 20 }}>
+          <span style={{ display: 'block', marginBottom: 8 }}>按作品清单选择 20 个视频</span>
+          <input aria-label="选择原始视频" type="file" accept="video/mp4" multiple disabled={uploading} onChange={(event) => setFiles(Array.from(event.target.files ?? []))} />
+        </label>
+        <button onClick={startUpload} disabled={uploading || files.length !== 20} style={{ marginTop: 28, border: 0, borderRadius: 999, padding: '14px 26px', background: '#496b55', color: 'white', cursor: 'pointer' }}>{uploading ? '上传中，请保持页面打开' : `开始上传（${files.length}/20）`}</button>
+        <div style={{ height: 10, background: '#dfe7dc', borderRadius: 999, overflow: 'hidden', marginTop: 28 }}><div style={{ height: '100%', width: `${progress}%`, background: '#7fa183', transition: 'width .2s' }} /></div>
+        <p role="status" style={{ marginTop: 12 }}>{status}</p>
+      </section>
+    </main>
   )
 }
 
@@ -310,4 +432,8 @@ function App() {
   )
 }
 
-export default App
+function Root() {
+  return window.location.pathname === '/upload' ? <UploadPage /> : <App />
+}
+
+export default Root
