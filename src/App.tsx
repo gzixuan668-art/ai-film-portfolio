@@ -235,6 +235,8 @@ function App() {
   const [cursor, setCursor] = useState({ x: -100, y: -100 })
   const [activeCategory, setActiveCategory] = useState('ALL')
   const [playingProject, setPlayingProject] = useState<Project | null>(null)
+  const [playerStatus, setPlayerStatus] = useState<'loading' | 'ready' | 'waiting' | 'error'>('loading')
+  const heroVideoRef = useRef<HTMLVideoElement>(null)
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 })
   const filteredProjects = activeCategory === 'ALL' ? projects : projects.filter(project => project.category === activeCategory)
@@ -255,6 +257,12 @@ function App() {
 
   useEffect(() => {
     document.body.style.overflow = playingProject ? 'hidden' : ''
+    if (playingProject) {
+      heroVideoRef.current?.pause()
+      setPlayerStatus('loading')
+    } else if (heroVideoRef.current) {
+      heroVideoRef.current.play().catch(() => undefined)
+    }
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setPlayingProject(null)
     }
@@ -297,6 +305,7 @@ function App() {
       <main>
         <section className="hero video-hero" id="top">
           <video
+            ref={heroVideoRef}
             className="video-hero-bg"
             src="/media/portrait-mv/summer.mp4"
             poster="/posters/portrait-mv/summer.jpg"
@@ -350,13 +359,21 @@ function App() {
               </button>
             ))}
           </div>
-          <motion.div className="project-grid" variants={gridVariants} initial="hidden" whileInView="visible" viewport={{ once: true, amount: .04 }}>
-            <AnimatePresence mode="popLayout">
-            {filteredProjects.map((project, index) => (
-              <ProjectCard project={project} index={index} onPlay={setPlayingProject} key={project.video} />
-            ))}
-            </AnimatePresence>
-          </motion.div>
+          <AnimatePresence mode="wait">
+            <motion.div
+              className="project-grid"
+              key={activeCategory}
+              variants={gridVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, y: 24 }}
+              transition={{ duration: .35, ease: smoothEase }}
+            >
+              {filteredProjects.map((project, index) => (
+                <ProjectCard project={project} index={index} onPlay={setPlayingProject} key={project.video} />
+              ))}
+            </motion.div>
+          </AnimatePresence>
           <p className="archive-count">当前展示 / {String(filteredProjects.length).padStart(2, '0')} 部作品</p>
         </section>
 
@@ -365,17 +382,22 @@ function App() {
           <div className="about-title"><p className="kicker">02 / 关于我</p><h2>不只是生成。<br /><em>我在导演整个画面。</em></h2></div>
           <motion.div className="about-grid" initial="hidden" whileInView="visible" viewport={{ once: true, amount: .2 }} variants={gridVariants}>
             <motion.div className="portrait-wrap" variants={cardVariants}>
-              <img src="https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?auto=format&fit=crop&w=1300&q=85" alt="创作者肖像占位图" loading="lazy" />
-              <span className="vertical-label">个人影像 / 占位图</span>
+              <img src="/profile-guo-zixuan.png" alt="郭梓轩黑白肖像" loading="lazy" />
+              <span className="vertical-label">郭梓轩 / AI 影像创作者</span>
             </motion.div>
             <motion.div className="about-copy" variants={cardVariants}>
-              <p className="lead">我是 AI 影像导演与视觉设计师，专注电影化叙事、情绪氛围与具有商业完成度的画面。</p>
-              <p>从概念、角色与场景开发，到电影分镜、AI 生成、剪辑、调色与声音，我独立完成一条影像从想法到成片的完整工作流。</p>
-              <p>我的视觉横跨东方叙事、日系情绪电影与高端品牌影像。AI 是制作方式，审美判断和导演思维才是作品的核心。</p>
+              <p className="lead">我是郭梓轩，环境设计本科在读，专注 AIGC 视觉与 AI 影像。</p>
+              <p>具备构图、色彩、空间与材质表达基础，能够完成创意构思、剧本拆解、电影分镜、人物与场景一致性控制、图生视频，以及剪辑、基础调色与声音设计。</p>
+              <p>我的创作涵盖商业品牌视觉、东方武侠与情感微电影。AI 是制作方式，审美判断、视觉统一和导演思维是我持续打磨的核心。</p>
+              <div className="about-meta">
+                <div><span>教育</span><strong>广东技术师范大学 · 环境设计本科</strong><small>GPA 3.7 / 4.0 · 2023—2027</small></div>
+                <div><span>经历</span><strong>湖美 AI 商学院 · AI 短视频运营助理</strong><small>2026.07—2026.08</small></div>
+                <div><span>荣誉</span><strong>湖美未来 AI 商学院优秀学员</strong><small>2026.08</small></div>
+              </div>
               <div className="stats">
-                <div><strong>20+</strong><span>影像作品与练习</span></div>
-                <div><strong>05</strong><span>核心创作能力</span></div>
-                <div><strong>01</strong><span>全流程独立创作者</span></div>
+                <div><strong>20</strong><span>站内完整影像作品</span></div>
+                <div><strong>3.7</strong><span>本科 GPA / 4.0</span></div>
+                <div><strong>05</strong><span>全流程创作环节</span></div>
               </div>
             </motion.div>
           </motion.div>
@@ -405,9 +427,9 @@ function App() {
           <p className="kicker">05 / 联系合作</p>
           <div className="contact-main">
             <h2>有一个故事<br />想让人<em>看见？</em></h2>
-            <a className="contact-circle" href="mailto:hello@example.com"><span>聊聊合作</span><Arrow diagonal /></a>
+            <a className="contact-circle" href="mailto:3158423779@qq.com"><span>聊聊合作</span><Arrow diagonal /></a>
           </div>
-          <div className="contact-meta"><a href="mailto:hello@example.com">HELLO@EXAMPLE.COM</a><div><a href="#">XIAOHONGSHU</a><a href="#">INSTAGRAM</a><a href="#">BEHANCE</a></div></div>
+          <div className="contact-meta"><a href="mailto:3158423779@qq.com">3158423779@QQ.COM</a><div><a href="tel:18038686754">180 3868 6754</a><span>广州</span></div></div>
         </section>
       </main>
 
@@ -422,7 +444,32 @@ function App() {
                 <div><span>{categoryLabels[playingProject.category]} / {playingProject.year}</span><h3>{playingProject.cnTitle}</h3><p>{playingProject.title}</p></div>
                 <button onClick={() => setPlayingProject(null)}>关闭 ×</button>
               </div>
-              <video key={playingProject.video} src={playingProject.video} poster={playingProject.image} controls autoPlay playsInline preload="metadata" />
+              <div className="player-stage">
+                <video
+                  key={playingProject.video}
+                  src={playingProject.video}
+                  poster={playingProject.image}
+                  controls
+                  autoPlay
+                  playsInline
+                  preload="auto"
+                  onLoadStart={() => setPlayerStatus('loading')}
+                  onCanPlay={() => setPlayerStatus('ready')}
+                  onPlaying={() => setPlayerStatus('ready')}
+                  onWaiting={() => setPlayerStatus('waiting')}
+                  onStalled={() => setPlayerStatus('waiting')}
+                  onError={() => setPlayerStatus('error')}
+                />
+                {playerStatus !== 'ready' && (
+                  <div className={`player-status ${playerStatus}`} role="status">
+                    {playerStatus === 'error' ? (
+                      <><strong>视频暂时加载失败</strong><span>请检查网络后关闭并重新打开</span></>
+                    ) : (
+                      <><i /><strong>{playerStatus === 'waiting' ? '正在缓冲原始视频' : '正在加载原始视频'}</strong><span>原始画质文件较大，请稍候</span></>
+                    )}
+                  </div>
+                )}
+              </div>
               <div className="player-foot"><span>作品 {playingProject.id} / 20 · 原始 1080P</span><span>{playingProject.duration}</span></div>
             </motion.div>
           </motion.div>
