@@ -240,10 +240,21 @@ function App() {
   const [playingProject, setPlayingProject] = useState<Project | null>(null)
   const [playerStatus, setPlayerStatus] = useState<'loading' | 'ready' | 'waiting' | 'error'>('loading')
   const [heroPlaybackBlocked, setHeroPlaybackBlocked] = useState(false)
+  const [useMobileVideo] = useState(() => {
+    if (typeof window === 'undefined') return false
+    const mobileViewport = window.matchMedia('(max-width: 820px)').matches
+    const mobileBrowser = /MicroMessenger|iPhone|iPad|iPod|Android|Mobile/i.test(window.navigator.userAgent)
+    return mobileViewport || mobileBrowser
+  })
   const heroVideoRef = useRef<HTMLVideoElement>(null)
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 })
   const filteredProjects = activeCategory === 'ALL' ? projects : projects.filter(project => project.category === activeCategory)
+  const playingVideoPath = playingProject?.video
+    ? useMobileVideo
+      ? playingProject.video.replace('/media/', '/media-mobile/')
+      : playingProject.video
+    : ''
 
   useEffect(() => {
     const tick = () => setTime(new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Hong_Kong' }).format(new Date()))
@@ -486,8 +497,8 @@ function App() {
               </div>
               <div className="player-stage">
                 <video
-                  key={playingProject.video}
-                  src={mediaUrl(playingProject.video)}
+                  key={playingVideoPath}
+                  src={mediaUrl(playingVideoPath)}
                   poster={playingProject.image}
                   controls
                   autoPlay
@@ -505,12 +516,12 @@ function App() {
                     {playerStatus === 'error' ? (
                       <><strong>视频暂时加载失败</strong><span>请检查网络后关闭并重新打开</span></>
                     ) : (
-                      <><i /><strong>{playerStatus === 'waiting' ? '正在缓冲原始视频' : '正在加载原始视频'}</strong><span>原始画质文件较大，请稍候</span></>
+                      <><i /><strong>{playerStatus === 'waiting' ? '正在缓冲视频' : '正在加载视频'}</strong><span>{useMobileVideo ? '正在使用手机流畅画质' : '正在使用电脑高清画质'}</span></>
                     )}
                   </div>
                 )}
               </div>
-              <div className="player-foot"><span>作品 {playingProject.id} / 20 · 原始 1080P</span><span>{playingProject.duration}</span></div>
+              <div className="player-foot"><span>作品 {playingProject.id} / 20 · {useMobileVideo ? '移动流畅 720P' : '电脑高清 1080P'}</span><span>{playingProject.duration}</span></div>
             </motion.div>
           </motion.div>
         )}
