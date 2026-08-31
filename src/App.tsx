@@ -13,6 +13,9 @@ type Project = {
   layout: 'wide' | 'portrait' | 'standard'
 }
 
+const mediaBaseUrl = (import.meta.env.VITE_MEDIA_BASE_URL ?? '').trim().replace(/\/$/, '')
+const mediaUrl = (path = '') => `${mediaBaseUrl}${path}`
+
 const projects: Project[] = [
   { id: '01', title: 'NEW STORY', cnTitle: '新', category: 'NARRATIVE FILM', year: '2026', duration: '06:01', image: '/posters/narrative/new-film.jpg', video: '/media/narrative/new-film.mp4', layout: 'wide' },
   { id: '02', title: 'MISUNDERSTANDING', cnTitle: '误会', category: 'SHORT VIDEO', year: '2026', duration: '02:06', image: '/posters/short-video/misunderstanding.jpg', video: '/media/short-video/misunderstanding.mp4', layout: 'standard' },
@@ -142,7 +145,7 @@ function UploadPage() {
   }
 
   async function uploadFile(file: File, key: string, index: number) {
-    const publicUrl = `/media/${key}`
+    const publicUrl = mediaUrl(`/media/${key}`)
     const existing = await fetch(publicUrl, { method: 'HEAD' })
     if (existing.ok && Number(existing.headers.get('content-length')) === file.size) {
       setStatus(`[${index + 1}/20] 已存在：${file.name}`)
@@ -307,7 +310,7 @@ function App() {
           <video
             ref={heroVideoRef}
             className="video-hero-bg"
-            src="/media/portrait-mv/summer.mp4"
+            src={mediaUrl('/media/portrait-mv/summer.mp4')}
             poster="/posters/portrait-mv/summer.jpg"
             autoPlay
             muted
@@ -447,7 +450,7 @@ function App() {
               <div className="player-stage">
                 <video
                   key={playingProject.video}
-                  src={playingProject.video}
+                  src={mediaUrl(playingProject.video)}
                   poster={playingProject.image}
                   controls
                   autoPlay
