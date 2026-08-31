@@ -239,6 +239,7 @@ function App() {
   const [activeCategory, setActiveCategory] = useState('ALL')
   const [playingProject, setPlayingProject] = useState<Project | null>(null)
   const [playerStatus, setPlayerStatus] = useState<'loading' | 'ready' | 'waiting' | 'error'>('loading')
+  const [heroPlaybackBlocked, setHeroPlaybackBlocked] = useState(false)
   const heroVideoRef = useRef<HTMLVideoElement>(null)
   const { scrollYProgress } = useScroll()
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 })
@@ -259,12 +260,31 @@ function App() {
   }, [])
 
   useEffect(() => {
+    const tryHeroPlayback = () => {
+      const hero = heroVideoRef.current
+      if (!hero) return
+      hero.muted = true
+      hero.play()
+        .then(() => setHeroPlaybackBlocked(false))
+        .catch(() => setHeroPlaybackBlocked(true))
+    }
+    const retryTimer = window.setTimeout(tryHeroPlayback, 2300)
+    document.addEventListener('WeixinJSBridgeReady', tryHeroPlayback)
+    return () => {
+      window.clearTimeout(retryTimer)
+      document.removeEventListener('WeixinJSBridgeReady', tryHeroPlayback)
+    }
+  }, [])
+
+  useEffect(() => {
     document.body.style.overflow = playingProject ? 'hidden' : ''
     if (playingProject) {
       heroVideoRef.current?.pause()
       setPlayerStatus('loading')
     } else if (heroVideoRef.current) {
-      heroVideoRef.current.play().catch(() => undefined)
+      heroVideoRef.current.play()
+        .then(() => setHeroPlaybackBlocked(false))
+        .catch(() => setHeroPlaybackBlocked(true))
     }
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') setPlayingProject(null)
@@ -318,9 +338,26 @@ function App() {
             playsInline
             preload="metadata"
             aria-label="《夏天》作品背景视频"
+            onPlay={() => setHeroPlaybackBlocked(false)}
           />
           <div className="video-hero-overlay" />
           <div className="hero-noise" />
+          {heroPlaybackBlocked && (
+            <button
+              className="hero-play-button"
+              type="button"
+              onClick={() => {
+                const hero = heroVideoRef.current
+                if (!hero) return
+                hero.muted = true
+                hero.play()
+                  .then(() => setHeroPlaybackBlocked(false))
+                  .catch(() => setHeroPlaybackBlocked(true))
+              }}
+            >
+              <span aria-hidden="true">▶</span> 点击播放背景
+            </button>
+          )}
 
           <motion.div className="video-hero-copy">
             <motion.p className="video-hero-kicker" initial={{ opacity: 0, x: -24 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: .8, delay: 2.35, ease: smoothEase }}>郭梓轩 · AI 影像作品集 / 2026</motion.p>
