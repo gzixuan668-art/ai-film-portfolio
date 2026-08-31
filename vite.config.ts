@@ -6,5 +6,7 @@ import { sites } from '@openai/sites-vite-plugin'
 import { originalVideoDevServer } from './scripts/original-video-dev-server.mjs'
 
 export default defineConfig({
+  // Relative asset URLs work both at the GitHub project URL and at zixuanfilm.cn.
+  base: './',
   plugins: [react(), originalVideoDevServer(), sites()],
 })
