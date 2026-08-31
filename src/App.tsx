@@ -310,7 +310,7 @@ function App() {
           <video
             ref={heroVideoRef}
             className="video-hero-bg"
-            src={mediaUrl('/media/portrait-mv/summer.mp4')}
+            src={mediaUrl('/media/hero/summer-background.mp4')}
             poster="/posters/portrait-mv/summer.jpg"
             autoPlay
             muted
