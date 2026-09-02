@@ -1,12 +1,15 @@
 import { createReadStream, readFileSync, statSync } from 'node:fs'
-import { basename } from 'node:path'
+import { basename, resolve } from 'node:path'
 
-const [siteUrl, uploadToken] = process.argv.slice(2)
+const [siteUrl, uploadToken, libraryPath] = process.argv.slice(2)
 if (!siteUrl || !uploadToken) {
-  throw new Error('Usage: node scripts/upload-originals.mjs <site-url> <upload-token>')
+  throw new Error('Usage: node scripts/upload-originals.mjs <site-url> <upload-token> [library-json]')
 }
 
-const library = JSON.parse(readFileSync(new URL('../work/video-library-local.json', import.meta.url), 'utf8'))
+const librarySource = libraryPath
+  ? resolve(libraryPath)
+  : new URL('../work/video-library-local.json', import.meta.url)
+const library = JSON.parse(readFileSync(librarySource, 'utf8'))
 const partSize = 32 * 1024 * 1024
 const headers = { authorization: `Bearer ${uploadToken}` }
 
@@ -75,4 +78,4 @@ for (let index = 0; index < library.length; index += 1) {
   await uploadFile(library[index], index)
 }
 
-console.log('全部 20 个原始视频已上传并核对文件大小。')
+console.log(`全部 ${library.length} 个视频已上传并核对文件大小。`)

@@ -9,6 +9,7 @@ for (const entry of buildEntries) {
 }
 
 const source = String.raw`const mediaPrefix = '/media/'
+const mobileMediaPrefix = '/media-mobile/'
 const uploadPrefix = '/api/media-upload/'
 
 function notFound() {
@@ -24,9 +25,9 @@ function mediaKey(url, prefix) {
   return decodeURIComponent(url.pathname.slice(prefix.length))
 }
 
-async function serveMedia(request, env, url) {
+async function serveMedia(request, env, url, prefix = mediaPrefix, keyPrefix = '') {
   if (!env.FILES) return notFound()
-  const key = mediaKey(url, mediaPrefix)
+  const key = keyPrefix + mediaKey(url, prefix)
   if (!key || key.includes('..')) return notFound()
 
   if (request.method === 'HEAD') {
@@ -118,6 +119,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url)
     if (url.pathname.startsWith(mediaPrefix)) return serveMedia(request, env, url)
+    if (url.pathname.startsWith(mobileMediaPrefix)) return serveMedia(request, env, url, mobileMediaPrefix, 'mobile/')
     if (url.pathname.startsWith(uploadPrefix)) return uploadMedia(request, env, url)
 
     const response = await env.ASSETS.fetch(request)

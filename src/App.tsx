@@ -14,7 +14,8 @@ type Project = {
 }
 
 const mediaBaseUrl = (import.meta.env.VITE_MEDIA_BASE_URL ?? '').trim().replace(/\/$/, '')
-const mediaUrl = (path = '') => `${mediaBaseUrl}${path}`
+const vlogMediaBaseUrl = 'https://z-ai-film-portfolio.poetic-orbit-7118.chatgpt.site'
+const mediaUrl = (path = '') => /^https?:\/\//i.test(path) ? path : `${mediaBaseUrl}${path}`
 
 const projects: Project[] = [
   { id: '01', title: 'NEW STORY', cnTitle: '新', category: 'NARRATIVE FILM', year: '2026', duration: '06:01', image: '/posters/narrative/new-film.jpg', video: '/media/narrative/new-film.mp4', layout: 'wide' },
@@ -37,9 +38,11 @@ const projects: Project[] = [
   { id: '18', title: 'SUMMER', cnTitle: '夏天', category: 'PORTRAIT MV', year: '2026', duration: '00:44', image: '/posters/portrait-mv/summer.jpg', video: '/media/portrait-mv/summer.mp4', layout: 'standard' },
   { id: '19', title: 'PORTRAIT STUDY', cnTitle: '写真', category: 'PORTRAIT MV', year: '2026', duration: '00:30', image: '/posters/portrait-mv/portrait-01.jpg', video: '/media/portrait-mv/portrait-01.mp4', layout: 'standard' },
   { id: '20', title: 'BY THE SEA', cnTitle: '海边', category: 'PORTRAIT MV', year: '2026', duration: '00:29', image: '/posters/portrait-mv/seaside.jpg', video: '/media/portrait-mv/seaside.mp4', layout: 'standard' },
+  { id: '21', title: 'COFFEE AT SUNSET', cnTitle: '黄昏咖啡日记', category: 'VLOG', year: '2026', duration: '00:34', image: '/posters/vlog/coffee-sunset.jpg', video: `${vlogMediaBaseUrl}/media/vlog/coffee-sunset.mp4`, layout: 'standard' },
+  { id: '22', title: 'TOY STORE DAY', cnTitle: '玩具店漫游', category: 'VLOG', year: '2026', duration: '00:30', image: '/posters/vlog/toy-store-day.jpg', video: `${vlogMediaBaseUrl}/media/vlog/toy-store-day.mp4`, layout: 'standard' },
 ]
 
-const categories = ['ALL', 'NARRATIVE FILM', 'SHORT DRAMA', 'MUSIC VIDEO', 'SHORT VIDEO', 'PORTRAIT MV']
+const categories = ['ALL', 'NARRATIVE FILM', 'SHORT DRAMA', 'MUSIC VIDEO', 'SHORT VIDEO', 'PORTRAIT MV', 'VLOG']
 const categoryLabels: Record<string, string> = {
   ALL: '全部作品',
   'NARRATIVE FILM': '剧情长片',
@@ -47,6 +50,7 @@ const categoryLabels: Record<string, string> = {
   'SHORT VIDEO': '短视频',
   'MUSIC VIDEO': '歌曲 MV',
   'PORTRAIT MV': '写真 MV',
+  VLOG: 'Vlog',
 }
 
 const capabilities = [
@@ -79,6 +83,8 @@ const uploadKeys = [
   'portrait-mv/portrait-01.mp4',
   'portrait-mv/seaside.mp4',
   'portrait-mv/summer.mp4',
+  'vlog/coffee-sunset.mp4',
+  'vlog/toy-store-day.mp4',
 ] as const
 const smoothEase = [0.76, 0, 0.24, 1] as const
 const gridVariants = {
@@ -134,7 +140,7 @@ function ProjectCard({ project, index, onPlay }: { project: Project; index: numb
 function UploadPage() {
   const [files, setFiles] = useState<File[]>([])
   const [token, setToken] = useState('')
-  const [status, setStatus] = useState('请选择全部 20 个原始视频。')
+  const [status, setStatus] = useState(`请选择全部 ${uploadKeys.length} 个原始视频。`)
   const [progress, setProgress] = useState(0)
   const [uploading, setUploading] = useState(false)
 
@@ -148,7 +154,7 @@ function UploadPage() {
     const publicUrl = mediaUrl(`/media/${key}`)
     const existing = await fetch(publicUrl, { method: 'HEAD' })
     if (existing.ok && Number(existing.headers.get('content-length')) === file.size) {
-      setStatus(`[${index + 1}/20] 已存在：${file.name}`)
+      setStatus(`[${index + 1}/${uploadKeys.length}] 已存在：${file.name}`)
       return
     }
 
@@ -170,7 +176,7 @@ function UploadPage() {
         parts.push(await uploaded.json())
         const fileProgress = end / file.size
         setProgress(Math.round(((index + fileProgress) / files.length) * 100))
-        setStatus(`[${index + 1}/20] 正在上传 ${file.name} · ${Math.round(fileProgress * 100)}%`)
+        setStatus(`[${index + 1}/${uploadKeys.length}] 正在上传 ${file.name} · ${Math.round(fileProgress * 100)}%`)
       }
 
       await checkedFetch(`${endpoint}?action=complete&uploadId=${encodeURIComponent(uploadId)}`, {
@@ -186,7 +192,7 @@ function UploadPage() {
 
   async function startUpload() {
     if (files.length !== uploadKeys.length) {
-      setStatus(`文件数量不正确：当前 ${files.length} 个，需要 20 个。`)
+      setStatus(`文件数量不正确：当前 ${files.length} 个，需要 ${uploadKeys.length} 个。`)
       return
     }
     if (!token.trim()) {
@@ -201,7 +207,7 @@ function UploadPage() {
         await uploadFile(files[index], uploadKeys[index], index)
       }
       setProgress(100)
-      setStatus('全部 20 个原始视频已上传完成。')
+      setStatus(`全部 ${uploadKeys.length} 个原始视频已上传完成。`)
     } catch (error) {
       setStatus(`上传中断：${error instanceof Error ? error.message : '未知错误'}`)
     } finally {
@@ -220,10 +226,10 @@ function UploadPage() {
           <input aria-label="本次上传密钥" type="password" value={token} onChange={(event) => setToken(event.target.value)} disabled={uploading} style={{ width: '100%', boxSizing: 'border-box', padding: 14, border: '1px solid #acbba8', borderRadius: 10 }} />
         </label>
         <label style={{ display: 'block', marginTop: 20 }}>
-          <span style={{ display: 'block', marginBottom: 8 }}>按作品清单选择 20 个视频</span>
+          <span style={{ display: 'block', marginBottom: 8 }}>按作品清单选择 {uploadKeys.length} 个视频</span>
           <input aria-label="选择原始视频" type="file" accept="video/mp4" multiple disabled={uploading} onChange={(event) => setFiles(Array.from(event.target.files ?? []))} />
         </label>
-        <button onClick={startUpload} disabled={uploading || files.length !== 20} style={{ marginTop: 28, border: 0, borderRadius: 999, padding: '14px 26px', background: '#496b55', color: 'white', cursor: 'pointer' }}>{uploading ? '上传中，请保持页面打开' : `开始上传（${files.length}/20）`}</button>
+        <button onClick={startUpload} disabled={uploading || files.length !== uploadKeys.length} style={{ marginTop: 28, border: 0, borderRadius: 999, padding: '14px 26px', background: '#496b55', color: 'white', cursor: 'pointer' }}>{uploading ? '上传中，请保持页面打开' : `开始上传（${files.length}/${uploadKeys.length}）`}</button>
         <div style={{ height: 10, background: '#dfe7dc', borderRadius: 999, overflow: 'hidden', marginTop: 28 }}><div style={{ height: '100%', width: `${progress}%`, background: '#7fa183', transition: 'width .2s' }} /></div>
         <p role="status" style={{ marginTop: 12 }}>{status}</p>
       </section>
@@ -318,7 +324,7 @@ function App() {
               <div className="opening-mask"><motion.span initial={{ y: '118%', scaleX: .42 }} animate={{ y: 0, scaleX: 1 }} transition={{ duration: 1.15, delay: .18, ease: smoothEase }}>Z.</motion.span></div>
               <div className="opening-copy-mask"><motion.strong initial={{ y: '130%' }} animate={{ y: 0 }} transition={{ duration: .9, delay: .5, ease: smoothEase }}>AI 影像导演 · 郭梓轩</motion.strong></div>
             </motion.div>
-            <p>正在打开一段夏日影像 <i>01—20</i></p>
+            <p>正在打开一段夏日影像 <i>01—{projects.length}</i></p>
           </motion.div>
         )}
       </AnimatePresence>
@@ -401,7 +407,7 @@ function App() {
           <div className="section-head">
             <p className="kicker">01 / 影像作品</p>
             <h2>先看长片，<br /><em>再看片刻。</em></h2>
-            <p className="section-intro">20 部作品按时长由长到短排列。第一部以电影宽幅作为主视觉，其余作品按长片、中篇与短片形成清晰节奏，点击封面即可播放原始视频。</p>
+            <p className="section-intro">共收录 {projects.length} 部作品。第一部以电影宽幅作为主视觉，其余作品按类型与篇幅形成清晰节奏，点击封面即可播放原始视频。</p>
           </div>
           <div className="category-filter" aria-label="作品分类">
             {categories.map(category => (
@@ -501,9 +507,13 @@ function App() {
                   src={mediaUrl(playingVideoPath)}
                   poster={playingProject.image}
                   controls
+                  controlsList="nodownload noremoteplayback"
+                  disablePictureInPicture
                   autoPlay
                   playsInline
                   preload="auto"
+                  onContextMenu={(event) => event.preventDefault()}
+                  onDragStart={(event) => event.preventDefault()}
                   onLoadStart={() => setPlayerStatus('loading')}
                   onCanPlay={() => setPlayerStatus('ready')}
                   onPlaying={() => setPlayerStatus('ready')}
@@ -521,7 +531,7 @@ function App() {
                   </div>
                 )}
               </div>
-              <div className="player-foot"><span>作品 {playingProject.id} / 20 · {useMobileVideo ? '移动流畅 720P' : '电脑高清 1080P'}</span><span>{playingProject.duration}</span></div>
+              <div className="player-foot"><span>作品 {playingProject.id} / {projects.length} · {useMobileVideo ? '移动流畅 720P' : '电脑高清画质'}</span><span>{playingProject.duration}</span></div>
             </motion.div>
           </motion.div>
         )}
