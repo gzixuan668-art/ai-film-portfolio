@@ -14,7 +14,6 @@ type Project = {
 }
 
 const mediaBaseUrl = (import.meta.env.VITE_MEDIA_BASE_URL ?? '').trim().replace(/\/$/, '')
-const vlogMediaBaseUrl = 'https://z-ai-film-portfolio.poetic-orbit-7118.chatgpt.site'
 const mediaUrl = (path = '') => /^https?:\/\//i.test(path) ? path : `${mediaBaseUrl}${path}`
 
 const projects: Project[] = [
@@ -38,8 +37,8 @@ const projects: Project[] = [
   { id: '18', title: 'SUMMER', cnTitle: '夏天', category: 'PORTRAIT MV', year: '2026', duration: '00:44', image: '/posters/portrait-mv/summer.jpg', video: '/media/portrait-mv/summer.mp4', layout: 'standard' },
   { id: '19', title: 'PORTRAIT STUDY', cnTitle: '写真', category: 'PORTRAIT MV', year: '2026', duration: '00:30', image: '/posters/portrait-mv/portrait-01.jpg', video: '/media/portrait-mv/portrait-01.mp4', layout: 'standard' },
   { id: '20', title: 'BY THE SEA', cnTitle: '海边', category: 'PORTRAIT MV', year: '2026', duration: '00:29', image: '/posters/portrait-mv/seaside.jpg', video: '/media/portrait-mv/seaside.mp4', layout: 'standard' },
-  { id: '21', title: 'COFFEE AT SUNSET', cnTitle: '黄昏咖啡日记', category: 'VLOG', year: '2026', duration: '00:34', image: '/posters/vlog/coffee-sunset.jpg', video: `${vlogMediaBaseUrl}/media/vlog/coffee-sunset.mp4`, layout: 'standard' },
-  { id: '22', title: 'TOY STORE DAY', cnTitle: '玩具店漫游', category: 'VLOG', year: '2026', duration: '00:30', image: '/posters/vlog/toy-store-day.jpg', video: `${vlogMediaBaseUrl}/media/vlog/toy-store-day.mp4`, layout: 'standard' },
+  { id: '21', title: 'COFFEE AT SUNSET', cnTitle: '黄昏咖啡日记', category: 'VLOG', year: '2026', duration: '00:34', image: '/posters/vlog/coffee-sunset.jpg', video: '/media/vlog/coffee-sunset.mp4', layout: 'standard' },
+  { id: '22', title: 'TOY STORE DAY', cnTitle: '玩具店漫游', category: 'VLOG', year: '2026', duration: '00:30', image: '/posters/vlog/toy-store-day.jpg', video: '/media/vlog/toy-store-day.mp4', layout: 'standard' },
 ]
 
 const categories = ['ALL', 'NARRATIVE FILM', 'SHORT DRAMA', 'MUSIC VIDEO', 'SHORT VIDEO', 'PORTRAIT MV', 'VLOG']
