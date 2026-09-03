@@ -38,7 +38,8 @@ const projects: Project[] = [
   { id: '19', title: 'PORTRAIT STUDY', cnTitle: '写真', category: 'PORTRAIT MV', year: '2026', duration: '00:30', image: '/posters/portrait-mv/portrait-01.jpg', video: '/media/portrait-mv/portrait-01.mp4', layout: 'standard' },
   { id: '20', title: 'BY THE SEA', cnTitle: '海边', category: 'PORTRAIT MV', year: '2026', duration: '00:29', image: '/posters/portrait-mv/seaside.jpg', video: '/media/portrait-mv/seaside.mp4', layout: 'standard' },
   { id: '21', title: 'COFFEE AT SUNSET', cnTitle: '黄昏咖啡日记', category: 'VLOG', year: '2026', duration: '00:34', image: '/posters/vlog/coffee-sunset.jpg', video: '/media/vlog/coffee-sunset.mp4', layout: 'standard' },
-  { id: '22', title: 'TOY STORE DAY', cnTitle: '玩具店漫游', category: 'VLOG', year: '2026', duration: '00:30', image: '/posters/vlog/toy-store-day.jpg', video: '/media/vlog/toy-store-day.mp4', layout: 'standard' },
+  { id: '22', title: 'TOY STORE DAY', cnTitle: '玩具店漫游', category: 'VLOG', year: '2026', duration: '00:36', image: '/posters/vlog/toy-store-day.jpg', video: '/media/vlog/toy-store-day.mp4', layout: 'standard' },
+  { id: '23', title: 'SOUTH WIND POTTERY', cnTitle: '南风陶作日记', category: 'VLOG', year: '2026', duration: '00:30', image: '/posters/vlog/south-wind-pottery.jpg', video: '/media/vlog/south-wind-pottery.mp4', layout: 'standard' },
 ]
 
 const categories = ['ALL', 'NARRATIVE FILM', 'SHORT DRAMA', 'MUSIC VIDEO', 'SHORT VIDEO', 'PORTRAIT MV', 'VLOG']
@@ -84,6 +85,7 @@ const uploadKeys = [
   'portrait-mv/summer.mp4',
   'vlog/coffee-sunset.mp4',
   'vlog/toy-store-day.mp4',
+  'vlog/south-wind-pottery.mp4',
 ] as const
 const smoothEase = [0.76, 0, 0.24, 1] as const
 const gridVariants = {
