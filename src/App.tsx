@@ -451,9 +451,10 @@ function App() {
                 <div><span>教育</span><strong>广东技术师范大学 · 环境设计本科</strong><small>GPA 3.7 / 4.0 · 2023—2027</small></div>
                 <div><span>经历</span><strong>湖美 AI 商学院 · AI 短视频运营助理</strong><small>2026.07—2026.08</small></div>
                 <div><span>荣誉</span><strong>湖美未来 AI 商学院优秀学员</strong><small>2026.08</small></div>
+                <div><span>奖项</span><strong>第14届未来设计师全国高校数字艺术设计大赛 · 广东赛区三等奖</strong><small>《紫轩葡萄庄数字人IP形象设计》· 2026.08</small></div>
               </div>
               <div className="stats">
-                <div><strong>20</strong><span>站内完整影像作品</span></div>
+                <div><strong>{projects.length}</strong><span>站内完整影像作品</span></div>
                 <div><strong>3.7</strong><span>本科 GPA / 4.0</span></div>
                 <div><strong>05</strong><span>全流程创作环节</span></div>
               </div>
