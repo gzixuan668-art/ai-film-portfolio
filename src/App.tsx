@@ -13,8 +13,9 @@ type Project = {
   layout: 'wide' | 'portrait' | 'standard'
 }
 
-const mediaBaseUrl = (import.meta.env.VITE_MEDIA_BASE_URL ?? '').trim().replace(/\/$/, '')
-const mediaUrl = (path = '') => /^https?:\/\//i.test(path) ? path : `${mediaBaseUrl}${path}`
+const domesticMediaBaseUrl = (import.meta.env.VITE_MEDIA_BASE_URL || 'https://zixuanfilm-media-1477887002.cos.ap-guangzhou.myqcloud.com').trim().replace(/\/$/, '')
+const locallyHostedMedia = (path: string) => path.startsWith('/media/vlog/') || path.startsWith('/media-mobile/vlog/') || path.startsWith('/media/hero/') || path.startsWith('/media-mobile/hero/')
+const mediaUrl = (path = '') => /^https?:\/\//i.test(path) || locallyHostedMedia(path) ? path : `${domesticMediaBaseUrl}${path}`
 
 const projects: Project[] = [
   { id: '01', title: 'NEW STORY', cnTitle: '新', category: 'NARRATIVE FILM', year: '2026', duration: '06:01', image: '/posters/narrative/new-film.jpg', video: '/media/narrative/new-film.mp4', layout: 'wide' },
@@ -258,7 +259,7 @@ function App() {
   const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 })
   const filteredProjects = activeCategory === 'ALL' ? projects : projects.filter(project => project.category === activeCategory)
   const playingVideoPath = playingProject?.video
-    ? useMobileVideo
+    ? useMobileVideo && playingProject.category === 'VLOG'
       ? playingProject.video.replace('/media/', '/media-mobile/')
       : playingProject.video
     : ''
@@ -348,7 +349,7 @@ function App() {
           <video
             ref={heroVideoRef}
             className="video-hero-bg"
-            src={mediaUrl('/media/hero/summer-background.mp4')}
+            src={mediaUrl(useMobileVideo ? '/media-mobile/hero/summer-background.mp4' : '/media/hero/summer-background.mp4')}
             poster="/posters/portrait-mv/summer.jpg"
             autoPlay
             muted
