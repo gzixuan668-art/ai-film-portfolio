@@ -14,8 +14,13 @@ type Project = {
 }
 
 const domesticMediaBaseUrl = (import.meta.env.VITE_MEDIA_BASE_URL || 'https://zixuanfilm-media-1477887002.cos.ap-guangzhou.myqcloud.com').trim().replace(/\/$/, '')
-const locallyHostedMedia = (path: string) => path.startsWith('/media/vlog/') || path.startsWith('/media-mobile/vlog/') || path.startsWith('/media/hero/') || path.startsWith('/media-mobile/hero/')
-const mediaUrl = (path = '') => /^https?:\/\//i.test(path) || locallyHostedMedia(path) ? path : `${domesticMediaBaseUrl}${path}`
+const vlogMediaBaseUrl = (import.meta.env.VITE_VLOG_MEDIA_BASE_URL || 'https://cdn.jsdelivr.net/gh/gzixuan668-art/ai-film-portfolio@1a44fb5161e1023bf5697e5d6f27cc658a0d43ff/public').trim().replace(/\/$/, '')
+const locallyHostedMedia = (path: string) => path.startsWith('/media/hero/') || path.startsWith('/media-mobile/hero/')
+const mediaUrl = (path = '') => {
+  if (/^https?:\/\//i.test(path) || locallyHostedMedia(path)) return path
+  if (path.startsWith('/media/vlog/') || path.startsWith('/media-mobile/vlog/')) return `${vlogMediaBaseUrl}${path}`
+  return `${domesticMediaBaseUrl}${path}`
+}
 
 const projects: Project[] = [
   { id: '01', title: 'NEW STORY', cnTitle: '新', category: 'NARRATIVE FILM', year: '2026', duration: '06:01', image: '/posters/narrative/new-film.jpg', video: '/media/narrative/new-film.mp4', layout: 'wide' },
